@@ -1,5 +1,13 @@
 import mongoose from 'mongoose';
 
+// 定义全局类型
+declare global {
+  var mongoose: {
+    conn: typeof mongoose | null;
+    promise: Promise<typeof mongoose> | null;
+  };
+}
+
 // 缓存数据库连接
 let cached = global.mongoose;
 
@@ -49,7 +57,7 @@ export async function connectToDatabase(
 
     cached.promise = mongoose
       .connect(MONGODB_URI, opts)
-      .then((mongoose) => {
+      .then((mongoose: typeof import('mongoose')) => {
         console.log('Connected to MongoDB');
         return mongoose;
       })
@@ -117,7 +125,7 @@ mongoose.connection.on('connected', () => {
   console.log('MongoDB connected successfully');
 });
 
-mongoose.connection.on('error', (err) => {
+mongoose.connection.on('error', (err: Error) => {
   console.error('MongoDB connection error:', err);
 });
 
