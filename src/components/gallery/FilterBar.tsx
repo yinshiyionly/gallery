@@ -10,6 +10,7 @@ interface FilterBarProps {
   onFilter: (filters: Partial<SearchParams>) => void;
   filters: Partial<SearchParams>;
   searchQuery: string;
+  autoFocus?: boolean;
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -17,6 +18,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onFilter,
   filters,
   searchQuery,
+  autoFocus = false,
 }) => {
   const { galleryLayout, setGalleryLayout } = useUIStore();
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -48,6 +50,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               onChange={onSearch}
               placeholder="搜索媒体内容..."
               className="w-full"
+              autoFocus={autoFocus}
             />
           </div>
 

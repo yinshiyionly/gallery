@@ -1,15 +1,112 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/Button';
+import { MediaCard } from '@/components/gallery/MediaCard';
+import { MediaModal } from '@/components/gallery/MediaModal';
+import { Loading } from '@/components/ui/Loading';
+import { EmptyState } from '@/components/ui/EmptyState';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useMedia } from '@/hooks';
+import { MediaItem } from '@/types';
+import Head from 'next/head';
+import { GetStaticProps } from 'next';
 
-export default function Home() {
+interface HomeProps {
+  initialFeaturedMedia?: MediaItem[];
+}
+
+export default function Home({ initialFeaturedMedia = [] }: HomeProps) {
+  // 获取精选媒体内容，使用初始数据作为 fallback
+  const { media: featuredMedia, loading } = useMedia(
+    { sortBy: 'createdAt', sortOrder: 'desc', limit: 6 },
+    { 
+      featured: true, 
+      limit: 6,
+      initialData: initialFeaturedMedia
+    }
+  );
+
+  // 媒体模态框状态
+  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // 处理媒体点击
+  const handleMediaClick = (media: MediaItem) => {
+    setSelectedMedia(media);
+    setModalOpen(true);
+  };
+
+  // 处理模态框关闭
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  // 处理上一个/下一个媒体
+  const handlePreviousMedia = () => {
+    if (!selectedMedia) return;
+    const currentIndex = featuredMedia.findIndex(m => m._id === selectedMedia._id);
+    if (currentIndex > 0) {
+      setSelectedMedia(featuredMedia[currentIndex - 1]);
+    }
+  };
+
+  const handleNextMedia = () => {
+    if (!selectedMedia) return;
+    const currentIndex = featuredMedia.findIndex(m => m._id === selectedMedia._id);
+    if (currentIndex < featuredMedia.length - 1) {
+      setSelectedMedia(featuredMedia[currentIndex + 1]);
+    }
+  };
+
   return (
     <Layout
       title="多端画廊 - 首页"
       description="一个基于 Next.js 和 MongoDB 构建的现代化多端画廊项目"
     >
+      <Head>
+        {/* 基础 SEO */}
+        <meta name="keywords" content="画廊,图片,视频,多端,响应式,Next.js,MongoDB,媒体展示" />
+        <meta name="author" content="多端画廊团队" />
+        <link rel="canonical" href="https://gallery.example.com/" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="多端画廊 - 探索精彩视觉世界" />
+        <meta property="og:description" content="多端画廊为您提供流畅的浏览体验，展示高质量的图片和视频内容，支持多种设备访问。" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://gallery.example.com/" />
+        <meta property="og:image" content="https://gallery.example.com/og-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="多端画廊" />
+        <meta property="og:locale" content="zh_CN" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="多端画廊 - 探索精彩视觉世界" />
+        <meta name="twitter:description" content="多端画廊为您提供流畅的浏览体验，展示高质量的图片和视频内容，支持多种设备访问。" />
+        <meta name="twitter:image" content="https://gallery.example.com/og-image.jpg" />
+        
+        {/* 结构化数据 */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "多端画廊",
+              "description": "一个基于 Next.js 和 MongoDB 构建的现代化多端画廊项目",
+              "url": "https://gallery.example.com/",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://gallery.example.com/gallery?query={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
+      </Head>
+
       {/* Hero Section */}
       <section className="pt-24 pb-12 md:pt-32 md:pb-16">
         <div className="container mx-auto px-4">
@@ -32,7 +129,7 @@ export default function Home() {
                     浏览画廊
                   </Button>
                 </Link>
-                <Link href="/search">
+                <Link href="/gallery?view=search">
                   <Button variant="outline" size="lg">
                     搜索内容
                   </Button>
@@ -46,13 +143,71 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="relative h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-secondary-500/20 z-10"></div>
-                <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                  <p className="text-gray-500 dark:text-gray-400">画廊预览图</p>
-                </div>
+                {loading ? (
+                  <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <Loading size="lg" />
+                  </div>
+                ) : featuredMedia.length > 0 ? (
+                  <div className="absolute inset-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-500/30 to-secondary-500/30 z-10"></div>
+                    <img 
+                      src={featuredMedia[0].thumbnailUrl} 
+                      alt="精选媒体" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <p className="text-gray-500 dark:text-gray-400">暂无精选内容</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Featured Media Section */}
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold">精选内容</h2>
+            <Link href="/gallery">
+              <Button variant="outline" size="sm">
+                查看全部
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+              </Button>
+            </Link>
+          </div>
+          
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loading size="lg" text="加载精选内容..." />
+            </div>
+          ) : featuredMedia.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {featuredMedia.map((item) => (
+                <MediaCard
+                  key={item._id}
+                  media={item}
+                  onClick={handleMediaClick}
+                  priority={true}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              }
+              title="暂无精选内容"
+              description="请稍后再来查看"
+            />
+          )}
         </div>
       </section>
 
@@ -108,6 +263,48 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Media Modal */}
+      <MediaModal
+        isOpen={modalOpen}
+        onClose={handleCloseModal}
+        media={selectedMedia}
+        onPrevious={handlePreviousMedia}
+        onNext={handleNextMedia}
+        hasPrevious={selectedMedia ? featuredMedia.findIndex(m => m._id === selectedMedia._id) > 0 : false}
+        hasNext={selectedMedia ? featuredMedia.findIndex(m => m._id === selectedMedia._id) < featuredMedia.length - 1 : false}
+      />
     </Layout>
   );
 }
+
+// 静态生成优化 - 预获取精选媒体内容
+export const getStaticProps: GetStaticProps<HomeProps> = async () => {
+  try {
+    // 在构建时获取精选媒体内容
+    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/media?limit=6&sortBy=createdAt&sortOrder=desc`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch featured media');
+    }
+    
+    const data = await response.json();
+    
+    return {
+      props: {
+        initialFeaturedMedia: data.data || [],
+      },
+      // 重新验证时间：1小时
+      revalidate: 3600,
+    };
+  } catch (error) {
+    console.error('Error fetching featured media for static generation:', error);
+    
+    return {
+      props: {
+        initialFeaturedMedia: [],
+      },
+      revalidate: 3600,
+    };
+  }
+};

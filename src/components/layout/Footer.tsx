@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { Navigation, footerNavigationItems } from './Navigation';
 import { cn } from '@/lib/utils';
 
 interface FooterProps {
@@ -30,24 +31,12 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
               快速链接
             </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link 
-                  href="/"
-                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                >
-                  首页
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/gallery"
-                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                >
-                  画廊
-                </Link>
-              </li>
-            </ul>
+            <Navigation 
+              items={footerNavigationItems}
+              orientation="vertical"
+              itemClassName="px-0 py-1 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-transparent"
+              activeClassName="text-primary-600 dark:text-primary-400 bg-transparent"
+            />
           </div>
 
           {/* Contact */}

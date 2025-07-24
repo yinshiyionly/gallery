@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { SearchInput } from '../ui/SearchInput';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import { UserPreferences } from '../ui/UserPreferences';
+import { Navigation, mainNavigationItems } from './Navigation';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -51,28 +53,14 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link 
-              href="/"
-              className={cn(
-                'text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors',
-                router.pathname === '/' && 'text-primary-600 dark:text-primary-400 font-medium'
-              )}
-            >
-              首页
-            </Link>
-            <Link 
-              href="/gallery"
-              className={cn(
-                'text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors',
-                router.pathname === '/gallery' && 'text-primary-600 dark:text-primary-400 font-medium'
-              )}
-            >
-              画廊
-            </Link>
-          </nav>
+          <div className="hidden md:block">
+            <Navigation 
+              items={mainNavigationItems}
+              orientation="horizontal"
+            />
+          </div>
 
-          {/* Search and Theme Toggle */}
+          {/* Search and Controls */}
           <div className="hidden md:flex items-center space-x-3">
             <div className="w-64">
               <SearchInput 
@@ -80,12 +68,12 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                 onSearch={handleSearch}
               />
             </div>
-            <ThemeToggle />
+            <UserPreferences />
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
-            <ThemeToggle />
+            <UserPreferences />
             <button
               className="p-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -131,28 +119,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                 }}
               />
             </div>
-            <nav className="flex flex-col space-y-3">
-              <Link 
-                href="/"
-                className={cn(
-                  'px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
-                  router.pathname === '/' && 'bg-gray-100 dark:bg-gray-800 text-primary-600 dark:text-primary-400 font-medium'
-                )}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                首页
-              </Link>
-              <Link 
-                href="/gallery"
-                className={cn(
-                  'px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
-                  router.pathname === '/gallery' && 'bg-gray-100 dark:bg-gray-800 text-primary-600 dark:text-primary-400 font-medium'
-                )}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                画廊
-              </Link>
-            </nav>
+            <Navigation 
+              items={mainNavigationItems}
+              orientation="vertical"
+              onItemClick={() => setIsMobileMenuOpen(false)}
+            />
           </div>
         </div>
       )}
