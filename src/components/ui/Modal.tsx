@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface ModalProps {
@@ -10,9 +10,10 @@ interface ModalProps {
   className?: string;
   showCloseButton?: boolean;
   closeOnOutsideClick?: boolean;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
-export const Modal: React.FC<ModalProps> = ({
+const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
@@ -20,63 +21,75 @@ export const Modal: React.FC<ModalProps> = ({
   className,
   showCloseButton = true,
   closeOnOutsideClick = true,
+  size = 'md',
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Close on escape key press
+  // Handle ESC key press
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  // Handle outside click
+  // Handle click outside
   const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (closeOnOutsideClick && modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
     }
   };
 
+  // Prevent scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  const sizeClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+    full: 'max-w-full m-4',
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
           onClick={handleOutsideClick}
         >
           <motion.div
             ref={modalRef}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.2 }}
             className={cn(
-              'bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden',
+              'bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full overflow-hidden',
+              sizeClasses[size],
               className
             )}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            onClick={(e) => e.stopPropagation()}
           >
             {(title || showCloseButton) && (
-              <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                 {title && <h3 className="text-lg font-medium">{title}</h3>}
                 {showCloseButton && (
                   <button
@@ -100,10 +113,12 @@ export const Modal: React.FC<ModalProps> = ({
                 )}
               </div>
             )}
-            <div className="p-4 overflow-y-auto max-h-[calc(90vh-8rem)]">{children}</div>
+            <div className="p-4">{children}</div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
   );
 };
+
+export { Modal };

@@ -9,7 +9,8 @@
     "lint": "next lint",
     "format": "prettier --write \"**/*.{js,ts,tsx,md}\"",
     "prepare": "husky install",
-    "test:db": "ts-node scripts/test-db-connection.ts"
+    "test:db": "ts-node scripts/test-db-connection.ts",
+    "test:media-details": "ts-node scripts/test-media-details-api.ts"
   },
   "dependencies": {
     "framer-motion": "^10.16.4",

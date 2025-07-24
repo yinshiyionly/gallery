@@ -3,44 +3,57 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 
-interface NavigationItem {
-  name: string;
-  href: string;
-  icon: React.ReactNode;
+interface NavigationProps {
+  className?: string;
+  vertical?: boolean;
 }
 
-export const Navigation: React.FC = () => {
+interface NavItem {
+  label: string;
+  href: string;
+  icon?: React.ReactNode;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ className, vertical = false }) => {
   const router = useRouter();
-  
-  const navigationItems: NavigationItem[] = [
+
+  const navItems: NavItem[] = [
     {
-      name: '首页',
+      label: '首页',
       href: '/',
       icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5"
-          viewBox="0 0 20 20"
-          fill="currentColor"
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-5 w-5" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
         >
-          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" 
+          />
         </svg>
       ),
     },
     {
-      name: '画廊',
+      label: '画廊',
       href: '/gallery',
       icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5"
-          viewBox="0 0 20 20"
-          fill="currentColor"
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-5 w-5" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
         >
-          <path
-            fillRule="evenodd"
-            d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-            clipRule="evenodd"
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
           />
         </svg>
       ),
@@ -48,25 +61,37 @@ export const Navigation: React.FC = () => {
   ];
 
   return (
-    <nav className="flex justify-center md:justify-start space-x-4 py-4 px-4 overflow-x-auto">
-      {navigationItems.map((item) => {
-        const isActive = router.pathname === item.href;
-        return (
-          <Link
-            key={item.name}
-            href={item.href}
-            className={cn(
-              'flex items-center space-x-2 px-3 py-2 rounded-md transition-colors',
-              isActive
-                ? 'bg-primary-50 text-primary-700 dark:bg-gray-800 dark:text-primary-400'
-                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
-            )}
-          >
-            <span className="flex-shrink-0">{item.icon}</span>
-            <span>{item.name}</span>
-          </Link>
-        );
-      })}
+    <nav className={cn(
+      vertical 
+        ? 'flex flex-col space-y-2' 
+        : 'flex items-center space-x-6',
+      className
+    )}>
+      {navItems.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={cn(
+            'transition-colors',
+            vertical 
+              ? 'flex items-center px-3 py-2 rounded-md' 
+              : 'flex items-center',
+            router.pathname === item.href
+              ? 'text-primary-600 dark:text-primary-400 font-medium'
+              : 'text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400',
+            vertical && router.pathname === item.href && 'bg-gray-100 dark:bg-gray-800'
+          )}
+        >
+          {item.icon && (
+            <span className={cn('', vertical ? 'mr-3' : 'mr-2')}>
+              {item.icon}
+            </span>
+          )}
+          <span>{item.label}</span>
+        </Link>
+      ))}
     </nav>
   );
 };
+
+export { Navigation };

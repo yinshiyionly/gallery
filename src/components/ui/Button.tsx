@@ -8,16 +8,20 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-primary-600 text-white hover:bg-primary-700',
+        secondary: 'bg-secondary-600 text-white hover:bg-secondary-700',
         outline: 'border border-primary-600 text-primary-600 hover:bg-primary-50',
         ghost: 'hover:bg-primary-50 text-primary-600',
         link: 'text-primary-600 underline-offset-4 hover:underline',
-        secondary: 'bg-secondary-600 text-white hover:bg-secondary-700',
+        danger: 'bg-red-600 text-white hover:bg-red-700',
       },
       size: {
         default: 'h-10 py-2 px-4',
         sm: 'h-8 px-3 text-xs',
         lg: 'h-12 px-6 text-base',
         icon: 'h-10 w-10',
+      },
+      fullWidth: {
+        true: 'w-full',
       },
     },
     defaultVariants: {
@@ -34,17 +38,17 @@ export interface ButtonProps
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, isLoading, children, ...props }, ref) => {
+  ({ className, variant, size, fullWidth, isLoading, children, ...props }, ref) => {
     return (
       <button
-        className={cn(buttonVariants({ variant, size }), className)}
+        className={cn(buttonVariants({ variant, size, fullWidth, className }))}
         ref={ref}
         disabled={isLoading || props.disabled}
         {...props}
       >
         {isLoading && (
           <svg
-            className="mr-2 h-4 w-4 animate-spin"
+            className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
