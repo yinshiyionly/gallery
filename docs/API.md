@@ -385,7 +385,10 @@ GET /api/health/db
 ```typescript
 interface MediaItem {
   _id: string;                    // MongoDB ObjectId
-  title: string;                  // 媒体标题 (必需, 最大200字符)
+  code: string;                   // 媒体编码 (必需, 唯一)
+  origin_url: string;             // 原始地址 (必需)
+  hd_url: string;                 // 高清地址 (必需)
+  title?: string;                 // 媒体标题 (可选, 最大200字符)
   description?: string;           // 媒体描述 (可选, 最大1000字符)
   url: string;                   // 媒体文件URL (必需, 有效的HTTP/HTTPS URL)
   thumbnailUrl: string;          // 缩略图URL (必需)

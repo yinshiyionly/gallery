@@ -4,12 +4,18 @@ export type MediaType = 'image' | 'video';
 // 媒体项目接口
 export interface MediaItem {
   _id: string;
-  title: string;
+  // DDL 必需字段
+  code: string;
+  origin_url: string;
+  hd_url: string;
+  
+  // 可选字段
+  title?: string;
   description?: string;
-  url: string;
-  thumbnailUrl: string;
+  thumbnailUrl?: string;
   type: MediaType;
   tags: string[];
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   metadata: MediaMetadata;

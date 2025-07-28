@@ -41,6 +41,7 @@ export async function connectToDatabase(
 
   if (!cached.promise) {
     const MONGODB_URI = process.env.MONGODB_URI;
+    const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME;
 
     if (!MONGODB_URI) {
       throw new Error(
@@ -48,17 +49,35 @@ export async function connectToDatabase(
       );
     }
 
+    // 检查 URI 是否已经包含数据库名称
+    const hasDbInUri = MONGODB_URI.includes('mongodb.net/') && 
+                       MONGODB_URI.split('mongodb.net/')[1]?.split('?')[0];
+    
+    let connectionUri = MONGODB_URI;
+    
+    // 如果 URI 中没有数据库名称，且提供了 MONGODB_DB_NAME，则添加到 URI 中
+    if (!hasDbInUri && MONGODB_DB_NAME) {
+      const separator = MONGODB_URI.includes('?') ? '&' : '?';
+      connectionUri = MONGODB_URI.replace('?', `/${MONGODB_DB_NAME}?`);
+      if (!connectionUri.includes('?')) {
+        connectionUri += `/${MONGODB_DB_NAME}`;
+      }
+    }
+
     const opts = {
       bufferCommands: false,
       maxPoolSize,
       serverSelectionTimeoutMS,
       socketTimeoutMS,
+      // 如果 URI 中没有数据库名称，可以通过 dbName 选项指定
+      ...(MONGODB_DB_NAME && !hasDbInUri && { dbName: MONGODB_DB_NAME }),
     };
 
     cached.promise = mongoose
-      .connect(MONGODB_URI, opts)
+      .connect(connectionUri, opts)
       .then((mongoose: typeof import('mongoose')) => {
-        console.log('Connected to MongoDB');
+        const dbName = mongoose.connection.db?.databaseName || 'unknown';
+        console.log(`Connected to MongoDB database: ${dbName}`);
         return mongoose;
       })
       .catch((err) => {

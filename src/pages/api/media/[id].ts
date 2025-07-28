@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { connectToDatabase } from '@/lib/mongodb';
-import { isValidObjectId, safeDbOperation } from '@/lib/utils/dbUtils';
-import { 
-  sendMethodNotAllowed, 
-  sendSuccess, 
-  sendNotFoundError, 
+import { isValidObjectId } from '@/lib/utils/dbUtils';
+import {
+  sendMethodNotAllowed,
+  sendSuccess,
+  sendNotFoundError,
   sendValidationError,
   sendError
 } from '@/lib/utils/apiResponse';
 import { MediaItem } from '@/types';
-import mongoose from 'mongoose';
+import Media from '@/lib/models/Media';
 
 /**
  * 获取相关媒体推荐
@@ -21,10 +21,6 @@ import mongoose from 'mongoose';
  */
 async function getRelatedMedia(currentMedia: MediaItem, limit: number = 4) {
   try {
-    // 获取 Media 模型
-    const Media = mongoose.models.Media || 
-      mongoose.model('Media', require('@/lib/models/Media').MediaSchema);
-    
     // 构建查询条件：匹配相同类型和标签，排除当前媒体
     const query = {
       _id: { $ne: currentMedia._id },
@@ -63,12 +59,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // 获取媒体 ID
   const { id } = req.query;
-  
+
   // 验证 ID 格式
   if (!id || typeof id !== 'string') {
     return sendValidationError(res, '无效的媒体 ID');
   }
-  
+
   // 验证 MongoDB ObjectId 格式
   if (!isValidObjectId(id)) {
     return sendValidationError(res, '无效的媒体 ID 格式');
@@ -77,25 +73,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // 连接到数据库
     await connectToDatabase();
-    
-    // 获取 Media 模型
-    const Media = mongoose.models.Media || 
-      mongoose.model('Media', require('@/lib/models/Media').MediaSchema);
-    
+
     // 执行查询
-    const media = await Media.findOne({ 
-      _id: id, 
-      isActive: true 
+    const media = await Media.findOne({
+      _id: id,
+    //  isActive: true
     }).lean().exec();
-    
+
+    console.log(media)
+
     // 如果媒体不存在，返回 404
     if (!media) {
       return sendNotFoundError(res, '未找到该媒体资源');
     }
-    
+
     // 获取相关媒体推荐
     const relatedMedia = await getRelatedMedia(media as MediaItem);
-    
+
     // 返回成功响应
     return sendSuccess(res, {
       media,
@@ -103,11 +97,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error: any) {
     console.error('获取媒体详情失败:', error);
-    
+
     // 返回错误响应
     return sendError(
-      res, 
-      error.message || '获取媒体详情失败', 
+      res,
+      error.message || '获取媒体详情失败',
       error.statusCode || 500
     );
   }

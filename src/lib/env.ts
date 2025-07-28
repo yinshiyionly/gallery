@@ -14,7 +14,7 @@ const envSchema = z.object({
 
   // 数据库配置
   MONGODB_URI: z.string().min(1, '数据库连接字符串不能为空'),
-  MONGODB_DB_NAME: z.string().default('gallery'),
+  MONGODB_DB_NAME: z.string().optional(), // 如果 URI 中已包含数据库名称，则可选
 
   // 身份验证配置
   NEXTAUTH_URL: z.string().url(),
@@ -87,17 +87,25 @@ export const isProduction = env.NODE_ENV === 'production';
 /**
  * 获取数据库连接配置
  */
-export const getDatabaseConfig = () => ({
-  uri: env.MONGODB_URI,
-  dbName: env.MONGODB_DB_NAME,
-  options: {
-    retryWrites: true,
-    w: 'majority',
-    maxPoolSize: isProduction ? 10 : 5,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-  },
-});
+export const getDatabaseConfig = () => {
+  // 检查 URI 是否已经包含数据库名称
+  const hasDbInUri = env.MONGODB_URI.includes('mongodb.net/') && 
+                     env.MONGODB_URI.split('mongodb.net/')[1]?.split('?')[0];
+  
+  return {
+    uri: env.MONGODB_URI,
+    dbName: env.MONGODB_DB_NAME,
+    hasDbInUri: !!hasDbInUri,
+    effectiveDbName: hasDbInUri || env.MONGODB_DB_NAME || 'gallery',
+    options: {
+      retryWrites: true,
+      w: 'majority',
+      maxPoolSize: isProduction ? 10 : 5,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    },
+  };
+};
 
 /**
  * 获取缓存配置
