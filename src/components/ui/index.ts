@@ -25,3 +25,20 @@ export * from './Switch';
 export * from './Textarea';
 export * from './ThemeToggle';
 export * from './Tooltip';
+
+// Animation components
+export { PageTransition, AnimatedPage, PageContent, PageTitle, PageSection } from './PageTransition';
+export { 
+  GestureHandler, 
+  PageGestureHandler, 
+  MediaGestureHandler, 
+  ListItemGestureHandler 
+} from './GestureHandler';
+export { ProgressiveImage, FadeInImage, ScaleInImage } from './ProgressiveImage';
+export { 
+  SmoothScroll, 
+  ParallaxScroll, 
+  ScrollTrigger, 
+  InfiniteScrollLoader, 
+  ScrollProgress 
+} from './SmoothScroll';

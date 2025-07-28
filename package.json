@@ -13,14 +13,22 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:db": "ts-node scripts/test-db-connection.ts",
-    "test:media-details": "ts-node scripts/test-media-details-api.ts"
+    "test:media-details": "ts-node scripts/test-media-details-api.ts",
+    "env:validate": "node scripts/validate-env.js",
+    "env:check": "npm run env:validate",
+    "env:setup": "node scripts/setup-env.js",
+    "env:copy": "cp .env.example .env.local && echo '✅ 环境文件已创建，请编辑 .env.local 配置您的环境变量'",
+    "env:test": "node scripts/test-env-setup.js",
+    "predev": "npm run env:validate",
+    "prebuild": "npm run env:validate"
   },
   "dependencies": {
     "framer-motion": "^10.16.4",
     "mongoose": "^7.5.0",
-    "next": "14.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "next": "14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.22.4",
     "zustand": "^4.4.1"
   },
   "devDependencies": {

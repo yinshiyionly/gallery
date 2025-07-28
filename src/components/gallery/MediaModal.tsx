@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { MobileMediaViewer } from './MobileMediaViewer';
+import { useResponsive } from '@/hooks/useResponsive';
 import { MediaItem } from '@/types';
 
 interface MediaModalProps {
@@ -28,6 +30,7 @@ export const MediaModal: React.FC<MediaModalProps> = ({
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const { isMobile } = useResponsive();
 
   // Reset zoom and position when media changes
   useEffect(() => {
@@ -117,6 +120,21 @@ export const MediaModal: React.FC<MediaModalProps> = ({
   }, [isOpen, hasPrevious, hasNext, onPrevious, onNext, toggleFullscreen]);
 
   if (!media) return null;
+
+  // 在移动设备上使用专门的移动端查看器
+  if (isMobile) {
+    return (
+      <MobileMediaViewer
+        media={media}
+        isOpen={isOpen}
+        onClose={onClose}
+        onNext={onNext}
+        onPrevious={onPrevious}
+        hasNext={hasNext}
+        hasPrevious={hasPrevious}
+      />
+    );
+  }
 
   return (
     <Modal

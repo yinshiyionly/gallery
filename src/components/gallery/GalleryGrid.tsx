@@ -1,9 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { MediaCard } from './MediaCard';
 import { Loading } from '@/components/ui/Loading';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { InfiniteScrollLoader, ScrollTrigger } from '@/components/ui/SmoothScroll';
 import { useInfiniteScroll } from '@/hooks';
+import { useImagePreloading } from '@/hooks/useImagePreloading';
 import { MediaItem, LayoutType } from '@/types';
 import { useUIStore } from '@/store';
 
@@ -35,6 +37,7 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
   
   // 无限滚动的引用元素
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const controls = useAnimation();
   
   // 使用自定义 hook 实现无限滚动
   const { isFetching } = useInfiniteScroll(loadMoreRef, onLoadMore, {
@@ -42,20 +45,67 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
     disabled: !hasMore || loading,
   });
 
+  // 使用图片预加载 hook
+  const { preloadNext, preloadBasedOnVisible } = useImagePreloading(items, {
+    preloadCount: 8,
+    priority: 'medium'
+  });
+
+  // 布局切换动画
+  useEffect(() => {
+    controls.start({
+      opacity: 1,
+      transition: { duration: 0.3 }
+    });
+  }, [galleryLayout, controls]);
+
+  // 当新项目加载时，预加载下一批图片
+  useEffect(() => {
+    if (items.length > 0) {
+      const visibleIndexes = items.slice(0, 12).map((_, index) => index);
+      preloadBasedOnVisible(visibleIndexes);
+    }
+  }, [items.length, preloadBasedOnVisible]);
+
   // 动画变体
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05,
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
+    hidden: { 
+      opacity: 0, 
+      y: 30,
+      scale: 0.9
+    },
+    show: { 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    },
+  };
+
+  // 布局切换动画变体
+  const layoutVariants = {
+    grid: {
+      opacity: 1,
+      transition: { duration: 0.3 }
+    },
+    masonry: {
+      opacity: 1,
+      transition: { duration: 0.3 }
+    }
   };
 
   // 切换布局类型
@@ -93,38 +143,63 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
     <div className={`w-full ${className}`}>
       {/* 布局控制按钮 */}
       {layoutControls && (
-        <div className="flex justify-end mb-4">
-          <div className="inline-flex rounded-md shadow-sm" role="group">
-            <button
+        <ScrollTrigger animation="slideUp" className="flex justify-end mb-6">
+          <motion.div 
+            className="inline-flex rounded-lg shadow-sm bg-white dark:bg-gray-800 p-1" 
+            role="group"
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.button
               type="button"
               onClick={() => toggleLayout('grid')}
-              className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                 galleryLayout === 'grid'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
-              } border border-gray-200 dark:border-gray-600`}
+                  ? 'bg-primary-600 text-white shadow-md'
+                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               aria-current={galleryLayout === 'grid' ? 'page' : undefined}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <motion.svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="h-5 w-5" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+                animate={{ rotate: galleryLayout === 'grid' ? 0 : -5 }}
+                transition={{ duration: 0.2 }}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </button>
-            <button
+              </motion.svg>
+            </motion.button>
+            <motion.button
               type="button"
               onClick={() => toggleLayout('masonry')}
-              className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                 galleryLayout === 'masonry'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
-              } border border-gray-200 dark:border-gray-600 border-l-0`}
+                  ? 'bg-primary-600 text-white shadow-md'
+                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               aria-current={galleryLayout === 'masonry' ? 'page' : undefined}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <motion.svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="h-5 w-5" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+                animate={{ rotate: galleryLayout === 'masonry' ? 0 : 5 }}
+                transition={{ duration: 0.2 }}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-              </svg>
-            </button>
-          </div>
-        </div>
+              </motion.svg>
+            </motion.button>
+          </motion.div>
+        </ScrollTrigger>
       )}
 
       {/* 媒体网格 */}
@@ -135,21 +210,31 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
         animate="show"
         className={
           galleryLayout === 'grid'
-            ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
-            : 'columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4'
+            ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
+            : 'columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6'
         }
+        style={{ opacity: 0 }}
+        animate={controls}
       >
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {items.map((item, index) => (
             <motion.div
               key={item._id}
               variants={itemVariants}
               layout
-              className={galleryLayout === 'masonry' ? 'mb-4 break-inside-avoid' : ''}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
+              className={galleryLayout === 'masonry' ? 'mb-6 break-inside-avoid' : ''}
+              initial="hidden"
+              animate="show"
+              exit={{ 
+                opacity: 0, 
+                scale: 0.8,
+                y: -20,
+                transition: { duration: 0.2 }
+              }}
+              whileHover={{ 
+                zIndex: 10,
+                transition: { duration: 0.1 }
+              }}
             >
               <MediaCard 
                 media={item} 
@@ -162,15 +247,20 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
         </AnimatePresence>
       </motion.div>
 
-      {/* 加载指示器和无限滚动触发器 */}
-      <div ref={loadMoreRef} className="w-full py-8 flex justify-center">
-        {(loading || isFetching) && (
-          <Loading 
-            size="md" 
-            text="加载更多..." 
-          />
-        )}
-      </div>
+      {/* 无限滚动加载器 */}
+      <InfiniteScrollLoader
+        isLoading={loading || isFetching}
+        hasMore={hasMore}
+        onLoadMore={async () => {
+          if (!loading && !isFetching) {
+            await onLoadMore();
+          }
+        }}
+        className="mt-8"
+      />
+      
+      {/* 隐藏的触发器元素 */}
+      <div ref={loadMoreRef} className="h-1" />
     </div>
   );
 };

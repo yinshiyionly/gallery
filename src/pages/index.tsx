@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout } from '@/components/layout/Layout';
+import { AnimatedLayout, AnimatedSection, AnimatedTitle, AnimatedContent } from '@/components/layout/AnimatedLayout';
 import { Button } from '@/components/ui/Button';
 import { MediaCard } from '@/components/gallery/MediaCard';
 import { MediaModal } from '@/components/gallery/MediaModal';
@@ -60,7 +60,7 @@ export default function Home({ initialFeaturedMedia = [] }: HomeProps) {
   };
 
   return (
-    <Layout
+    <AnimatedLayout
       title="多端画廊 - 首页"
       description="一个基于 Next.js 和 MongoDB 构建的现代化多端画廊项目"
     >
@@ -108,22 +108,27 @@ export default function Home({ initialFeaturedMedia = [] }: HomeProps) {
       </Head>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-12 md:pt-32 md:pb-16">
+      <AnimatedSection className="pt-24 pb-12 md:pt-32 md:pb-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
-            <motion.div 
-              className="md:w-1/2 mb-8 md:mb-0 md:pr-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4">
+            <AnimatedContent className="md:w-1/2 mb-8 md:mb-0 md:pr-8">
+              <AnimatedTitle className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4">
                 探索精彩<span className="text-primary-600 dark:text-primary-400">视觉世界</span>
-              </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+              </AnimatedTitle>
+              <motion.p 
+                className="text-lg text-gray-600 dark:text-gray-300 mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
                 多端画廊为您提供流畅的浏览体验，展示高质量的图片和视频内容，支持多种设备访问。
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </motion.p>
+              <motion.div 
+                className="flex flex-wrap gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
                 <Link href="/gallery">
                   <Button size="lg">
                     浏览画廊
@@ -134,15 +139,14 @@ export default function Home({ initialFeaturedMedia = [] }: HomeProps) {
                     搜索内容
                   </Button>
                 </Link>
-              </div>
-            </motion.div>
-            <motion.div 
-              className="md:w-1/2"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <div className="relative h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-xl">
+              </motion.div>
+            </AnimatedContent>
+            <AnimatedContent delay={0.2} className="md:w-1/2">
+              <motion.div 
+                className="relative h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden shadow-xl"
+                whileHover={{ scale: 1.02, y: -5 }}
+                transition={{ duration: 0.3 }}
+              >
                 {loading ? (
                   <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                     <Loading size="lg" />
@@ -161,17 +165,22 @@ export default function Home({ initialFeaturedMedia = [] }: HomeProps) {
                     <p className="text-gray-500 dark:text-gray-400">暂无精选内容</p>
                   </div>
                 )}
-              </div>
-            </motion.div>
+              </motion.div>
+            </AnimatedContent>
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* Featured Media Section */}
-      <section className="py-12">
+      <AnimatedSection delay={0.3} className="py-12">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold">精选内容</h2>
+          <motion.div 
+            className="flex justify-between items-center mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <AnimatedTitle level={2} className="text-2xl md:text-3xl font-bold">精选内容</AnimatedTitle>
             <Link href="/gallery">
               <Button variant="outline" size="sm">
                 查看全部
@@ -180,41 +189,63 @@ export default function Home({ initialFeaturedMedia = [] }: HomeProps) {
                 </svg>
               </Button>
             </Link>
-          </div>
+          </motion.div>
           
           {loading ? (
-            <div className="flex justify-center items-center h-64">
+            <motion.div 
+              className="flex justify-center items-center h-64"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
               <Loading size="lg" text="加载精选内容..." />
-            </div>
+            </motion.div>
           ) : featuredMedia.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {featuredMedia.map((item) => (
-                <MediaCard
+            <AnimatedContent delay={0.5} stagger className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {featuredMedia.map((item, index) => (
+                <motion.div
                   key={item._id}
-                  media={item}
-                  onClick={handleMediaClick}
-                  priority={true}
-                />
+                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ 
+                    duration: 0.5, 
+                    delay: 0.5 + index * 0.1,
+                    ease: 'easeOut'
+                  }}
+                  whileHover={{ y: -5, scale: 1.02 }}
+                >
+                  <MediaCard
+                    media={item}
+                    onClick={handleMediaClick}
+                    priority={true}
+                  />
+                </motion.div>
               ))}
-            </div>
+            </AnimatedContent>
           ) : (
-            <EmptyState
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              }
-              title="暂无精选内容"
-              description="请稍后再来查看"
-            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <EmptyState
+                icon={
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                }
+                title="暂无精选内容"
+                description="请稍后再来查看"
+              />
+            </motion.div>
           )}
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* Features Section */}
-      <section className="py-12 bg-gray-50 dark:bg-gray-800">
+      <AnimatedSection delay={0.6} className="py-12 bg-gray-50 dark:bg-gray-800">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">特色功能</h2>
+          <AnimatedTitle level={2} className="text-3xl font-bold text-center mb-12">特色功能</AnimatedTitle>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -249,20 +280,34 @@ export default function Home({ initialFeaturedMedia = [] }: HomeProps) {
               <motion.div 
                 key={index}
                 className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 * index }}
+                initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ 
+                  duration: 0.6, 
+                  delay: 0.7 + index * 0.1,
+                  ease: 'easeOut'
+                }}
+                whileHover={{ 
+                  y: -8, 
+                  scale: 1.03,
+                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                }}
+                whileTap={{ scale: 0.98 }}
               >
-                <div className="text-primary-600 dark:text-primary-400 mb-4">
+                <motion.div 
+                  className="text-primary-600 dark:text-primary-400 mb-4"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ duration: 0.2 }}
+                >
                   {feature.icon}
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* Media Modal */}
       <MediaModal
@@ -274,7 +319,7 @@ export default function Home({ initialFeaturedMedia = [] }: HomeProps) {
         hasPrevious={selectedMedia ? featuredMedia.findIndex(m => m._id === selectedMedia._id) > 0 : false}
         hasNext={selectedMedia ? featuredMedia.findIndex(m => m._id === selectedMedia._id) < featuredMedia.length - 1 : false}
       />
-    </Layout>
+    </AnimatedLayout>
   );
 }
 

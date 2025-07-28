@@ -4,7 +4,8 @@ import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Head from 'next/head';
 import Link from 'next/link';
-import { Layout } from '@/components/layout/Layout';
+import { AnimatedLayout, AnimatedSection, AnimatedTitle, AnimatedContent } from '@/components/layout/AnimatedLayout';
+import { MediaGestureHandler } from '@/components/ui/GestureHandler';
 import { Button } from '@/components/ui/Button';
 import { MediaCard } from '@/components/gallery/MediaCard';
 import { MediaModal } from '@/components/gallery/MediaModal';
@@ -25,19 +26,24 @@ export default function MediaDetail({ media, relatedMedia, error }: MediaDetailP
   // 如果页面正在生成中，显示加载状态
   if (router.isFallback) {
     return (
-      <Layout title="加载中..." description="正在加载媒体内容">
-        <div className="flex justify-center items-center h-screen">
+      <AnimatedLayout title="加载中..." description="正在加载媒体内容">
+        <motion.div 
+          className="flex justify-center items-center h-screen"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <Loading size="lg" text="加载媒体内容..." />
-        </div>
-      </Layout>
+        </motion.div>
+      </AnimatedLayout>
     );
   }
   
   // 如果发生错误或媒体不存在，显示错误状态
   if (error || !media) {
     return (
-      <Layout title="内容不可用" description="无法加载请求的媒体内容">
-        <div className="container mx-auto px-4 py-24">
+      <AnimatedLayout title="内容不可用" description="无法加载请求的媒体内容">
+        <AnimatedSection className="container mx-auto px-4 py-24">
           <EmptyState
             icon={
               <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,8 +58,8 @@ export default function MediaDetail({ media, relatedMedia, error }: MediaDetailP
               </Button>
             }
           />
-        </div>
-      </Layout>
+        </AnimatedSection>
+      </AnimatedLayout>
     );
   }
   
@@ -165,7 +171,7 @@ export default function MediaDetail({ media, relatedMedia, error }: MediaDetailP
   };
 
   return (
-    <Layout
+    <AnimatedLayout
       title={`${media.title} - 多端画廊`}
       description={media.description || `查看 ${media.title} 的详细信息`}
     >
@@ -226,10 +232,16 @@ export default function MediaDetail({ media, relatedMedia, error }: MediaDetailP
         />
       </Head>
       
-      <div className="pt-24 pb-12">
+      <AnimatedSection className="pt-24 pb-12">
         <div className="container mx-auto px-4">
           {/* 导航面包屑 */}
-          <nav className="flex mb-6 text-sm" aria-label="面包屑导航">
+          <motion.nav 
+            className="flex mb-6 text-sm" 
+            aria-label="面包屑导航"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <ol className="inline-flex items-center space-x-1 md:space-x-3">
               <li className="inline-flex items-center">
                 <Link href="/" className="text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">
@@ -257,59 +269,82 @@ export default function MediaDetail({ media, relatedMedia, error }: MediaDetailP
                 </div>
               </li>
             </ol>
-          </nav>
+          </motion.nav>
           
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             {/* 媒体内容 */}
             <div className="lg:col-span-3">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg"
+              <MediaGestureHandler
+                onPrevious={() => console.log('Previous media')}
+                onNext={() => console.log('Next media')}
+                onClose={() => router.back()}
               >
-                <div className="relative aspect-video bg-gray-100 dark:bg-gray-700">
-                  {media.type === 'image' ? (
-                    <Image
-                      src={media.url}
-                      alt={media.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
-                      className="object-contain cursor-pointer"
-                      onClick={() => handleMediaClick(media)}
-                      priority
-                    />
-                  ) : (
-                    <video
-                      src={media.url}
-                      poster={media.thumbnailUrl}
-                      controls
-                      className="w-full h-full object-contain"
-                    />
-                  )}
-                </div>
+                <AnimatedContent className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                  <motion.div 
+                    className="relative aspect-video bg-gray-100 dark:bg-gray-700"
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {media.type === 'image' ? (
+                      <Image
+                        src={media.url}
+                        alt={media.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
+                        className="object-contain cursor-pointer"
+                        onClick={() => handleMediaClick(media)}
+                        priority
+                      />
+                    ) : (
+                      <video
+                        src={media.url}
+                        poster={media.thumbnailUrl}
+                        controls
+                        className="w-full h-full object-contain"
+                      />
+                    )}
+                  </motion.div>
                 
-                <div className="p-6">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    {media.title}
-                  </h1>
+                  <motion.div 
+                    className="p-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                  >
+                    <AnimatedTitle className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                      {media.title}
+                    </AnimatedTitle>
                   
-                  {media.description && (
-                    <p className="text-gray-700 dark:text-gray-300 mb-6">
-                      {media.description}
-                    </p>
-                  )}
-                  
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {media.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
+                    {media.description && (
+                      <motion.p 
+                        className="text-gray-700 dark:text-gray-300 mb-6"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
                       >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                        {media.description}
+                      </motion.p>
+                    )}
+                    
+                    <motion.div 
+                      className="flex flex-wrap gap-2 mb-6"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                    >
+                      {media.tags.map((tag, index) => (
+                        <motion.span
+                          key={tag}
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          {tag}
+                        </motion.span>
+                      ))}
+                    </motion.div>
                   
                   <div className="grid grid-cols-2 gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6">
                     <div>
@@ -337,32 +372,49 @@ export default function MediaDetail({ media, relatedMedia, error }: MediaDetailP
                     </div>
                   </div>
                   
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      onClick={() => handleMediaClick(media)}
-                      className="flex items-center gap-2"
+                    <motion.div 
+                      className="flex flex-wrap gap-3"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.6 }}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                      </svg>
-                      {media.type === 'image' ? '查看大图' : '全屏播放'}
-                    </Button>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button
+                          onClick={() => handleMediaClick(media)}
+                          className="flex items-center gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                          </svg>
+                          {media.type === 'image' ? '查看大图' : '全屏播放'}
+                        </Button>
+                      </motion.div>
                     
-                    <div className="relative share-menu-container">
-                      <Button
-                        variant="outline"
-                        onClick={handleShare}
-                        className="flex items-center gap-2"
+                      <motion.div 
+                        className="relative share-menu-container"
+                        whileHover={{ scale: 1.05 }} 
+                        whileTap={{ scale: 0.95 }}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                        </svg>
-                        分享
-                      </Button>
+                        <Button
+                          variant="outline"
+                          onClick={handleShare}
+                          className="flex items-center gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                          </svg>
+                          分享
+                        </Button>
                       
-                      {/* 分享菜单 */}
-                      {shareMenuOpen && (
-                        <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                        {/* 分享菜单 */}
+                        {shareMenuOpen && (
+                          <motion.div 
+                            className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                          >
                           <div className="py-2">
                             <button
                               onClick={handleCopyLink}
@@ -401,55 +453,71 @@ export default function MediaDetail({ media, relatedMedia, error }: MediaDetailP
                               </svg>
                               微博
                             </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <Button
-                      variant="outline"
-                      onClick={() => router.back()}
-                      className="flex items-center gap-2"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                      </svg>
-                      返回
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </motion.div>
+                      
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button
+                          variant="outline"
+                          onClick={() => router.back()}
+                          className="flex items-center gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                          </svg>
+                          返回
+                        </Button>
+                      </motion.div>
+                    </motion.div>
+                  </motion.div>
+                </AnimatedContent>
+              </MediaGestureHandler>
             </div>
             
             {/* 相关媒体 */}
             <div className="lg:col-span-2">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <h2 className="text-xl font-bold mb-4">相关媒体</h2>
+              <AnimatedContent delay={0.3}>
+                <AnimatedTitle level={2} className="text-xl font-bold mb-4">相关媒体</AnimatedTitle>
                 
                 {relatedMedia.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                    {relatedMedia.map((item) => (
-                      <MediaCard
+                    {relatedMedia.map((item, index) => (
+                      <motion.div
                         key={item._id}
-                        media={item}
-                        onClick={handleMediaClick}
-                      />
+                        initial={{ opacity: 0, x: 20, scale: 0.9 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        transition={{ 
+                          duration: 0.4, 
+                          delay: 0.4 + index * 0.1,
+                          ease: 'easeOut'
+                        }}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                      >
+                        <MediaCard
+                          media={item}
+                          onClick={handleMediaClick}
+                        />
+                      </motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center">
+                  <motion.div 
+                    className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, delay: 0.4 }}
+                  >
                     <p className="text-gray-500 dark:text-gray-400">暂无相关媒体</p>
-                  </div>
+                  </motion.div>
                 )}
-              </motion.div>
+              </AnimatedContent>
             </div>
           </div>
+          </div>
         </div>
-      </div>
+      </AnimatedSection>
       
       {/* 媒体模态框 */}
       <MediaModal
@@ -461,7 +529,7 @@ export default function MediaDetail({ media, relatedMedia, error }: MediaDetailP
         hasPrevious={selectedMedia && selectedMedia._id !== media._id ? relatedMedia.findIndex(m => m._id === selectedMedia._id) > 0 : false}
         hasNext={selectedMedia && selectedMedia._id !== media._id ? relatedMedia.findIndex(m => m._id === selectedMedia._id) < relatedMedia.length - 1 : false}
       />
-    </Layout>
+    </AnimatedLayout>
   );
 }
 

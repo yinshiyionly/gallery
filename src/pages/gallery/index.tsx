@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { Layout } from '@/components/layout/Layout';
+import { AnimatedLayout, AnimatedSection, AnimatedTitle, AnimatedContent } from '@/components/layout/AnimatedLayout';
 import { GalleryGrid } from '@/components/gallery/GalleryGrid';
 import { FilterBar } from '@/components/gallery/FilterBar';
 import { MediaModal } from '@/components/gallery/MediaModal';
@@ -8,6 +8,7 @@ import { Loading } from '@/components/ui/Loading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useMedia } from '@/hooks';
 import { MediaItem, SearchParams } from '@/types';
+import { motion } from 'framer-motion';
 import Head from 'next/head';
 
 export default function Gallery() {
@@ -100,7 +101,7 @@ export default function Gallery() {
   };
 
   return (
-    <Layout
+    <AnimatedLayout
       title="多端画廊 - 画廊"
       description="浏览我们的媒体画廊，查看高质量的图片和视频内容"
     >
@@ -162,51 +163,75 @@ export default function Gallery() {
       </Head>
       
       {/* 搜索和筛选区域 */}
-      <div id="search-section" className="pt-24 pb-4">
-        <FilterBar
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          filters={filters}
-          searchQuery={searchQuery}
-        />
-      </div>
+      <AnimatedSection id="search-section" className="pt-24 pb-4">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        >
+          <FilterBar
+            onSearch={handleSearch}
+            onFilter={handleFilter}
+            filters={filters}
+            searchQuery={searchQuery}
+          />
+        </motion.div>
+      </AnimatedSection>
       
       {/* 画廊内容 */}
-      <div className="py-8">
+      <AnimatedSection delay={0.2} className="py-8">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold">
+          <motion.div 
+            className="flex justify-between items-center mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <AnimatedTitle className="text-2xl md:text-3xl font-bold">
               {searchQuery ? `搜索结果: "${searchQuery}"` : '媒体画廊'}
-            </h1>
+            </AnimatedTitle>
             {totalItems > 0 && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <motion.p 
+                className="text-sm text-gray-500 dark:text-gray-400"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
                 共 {totalItems} 个媒体项目
-              </p>
+              </motion.p>
             )}
-          </div>
+          </motion.div>
           
-          {error ? (
-            <EmptyState
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              }
-              title="加载失败"
-              description={error.message || "无法加载媒体内容，请稍后再试"}
-            />
-          ) : (
-            <GalleryGrid
-              items={media}
-              loading={loading}
-              hasMore={hasMore}
-              onLoadMore={loadMore}
-              onItemClick={handleMediaClick}
-              layoutControls={true}
-            />
-          )}
+          <AnimatedContent delay={0.4}>
+            {error ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <EmptyState
+                  icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  }
+                  title="加载失败"
+                  description={error.message || "无法加载媒体内容，请稍后再试"}
+                />
+              </motion.div>
+            ) : (
+              <GalleryGrid
+                items={media}
+                loading={loading}
+                hasMore={hasMore}
+                onLoadMore={loadMore}
+                onItemClick={handleMediaClick}
+                layoutControls={true}
+              />
+            )}
+          </AnimatedContent>
         </div>
-      </div>
+      </AnimatedSection>
       
       {/* 媒体模态框 */}
       <MediaModal
@@ -218,6 +243,6 @@ export default function Gallery() {
         hasPrevious={selectedMedia ? media.findIndex(m => m._id === selectedMedia._id) > 0 : false}
         hasNext={selectedMedia ? media.findIndex(m => m._id === selectedMedia._id) < media.length - 1 : false}
       />
-    </Layout>
+    </AnimatedLayout>
   );
 }
