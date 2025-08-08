@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { buildMongoUri, getConnectionSummary } from './utils/mongoUtils';
 
 // 定义全局类型
 declare global {

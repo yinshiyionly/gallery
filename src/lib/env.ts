@@ -179,6 +179,7 @@ export const getEnvSummary = () => ({
     connected: !!env.MONGODB_URI,
     dbName: env.MONGODB_DB_NAME,
     uri: maskSensitiveInfo(env.MONGODB_URI),
+    dbNameSource: env.MONGODB_URI.includes('/') && env.MONGODB_URI.split('/').pop()?.split('?')[0] ? 'uri' : 'env',
   },
   services: {
     cloudinary: !!(env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY),
